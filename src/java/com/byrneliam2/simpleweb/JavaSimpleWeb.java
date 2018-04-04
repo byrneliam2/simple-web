@@ -11,7 +11,6 @@ public class JavaSimpleWeb {
 
     private String webdir = "src/web/";
     private String indexPath = webdir + "html/index.html";
-    private String badRequestPath = webdir + "html/badrequest.html";
 
     /* -------------------------------------------------------------------------------------------------------------- */
 
@@ -34,10 +33,7 @@ public class JavaSimpleWeb {
     private void processNextRequest(Socket socket) throws IOException {
         try {
             String request = readRequest(socket);
-            String getCommand = stripHttpGetCommand(request);
-            assert getCommand != null;
-
-            String page = getCommand.split(" ")[1];
+            String page = getGetCommandFile(request);
             String response;
 
             if (page.equals("/")) {
@@ -45,25 +41,26 @@ public class JavaSimpleWeb {
             } else if (page.startsWith("/page")) {
                 response = "something";
             } else {
-                response = getBadRequest();
+                response = formHTMLParagraph("Could not return file specified.");
             }
 
             sendResponse(httpResponse(response), socket);
         } catch (Exception e) {
-            sendResponse(httpResponse(e.getMessage()), socket);
+            sendResponse(httpResponse(formHTMLParagraph(e.getMessage())), socket);
         }
     }
 
     /**
-     * Process the HTTP request and extract the GET command.
+     * Process the HTTP request and extract the GET command's requested file. If no
+     * GET command is found, a page is returned notifying the user of the issue.
      */
-    private String stripHttpGetCommand(String request) throws IOException {
-        BufferedReader r = new BufferedReader(new StringReader(request));
+    private String getGetCommandFile(String request) {
+        Scanner scanner = new Scanner(request);
         String line;
-        while ((line = r.readLine()) != null) {
-            if (line.startsWith("GET")) return line;
+        while ((line = scanner.nextLine()) != null) {
+            if (line.startsWith("GET")) return line.split(" ")[1];
         }
-        return null;
+        return formHTMLParagraph("Bad request (no GET command found.)");
     }
 
     private String readRequest(Socket socket) throws IOException {
@@ -100,10 +97,6 @@ public class JavaSimpleWeb {
         return loadFileIntoString(new File(indexPath));
     }
 
-    private String getBadRequest() {
-        return loadFileIntoString(new File(badRequestPath));
-    }
-
     /**
      * Load the given file into a String and return for addition into the response.
      */
@@ -118,6 +111,13 @@ public class JavaSimpleWeb {
         }
 
         return str.toString();
+    }
+
+    /**
+     * Create and return a simple HTML page with a single paragraph element.
+     */
+    private String formHTMLParagraph(String text) {
+        return "<!DOCTYPE html><html><body><p>" + text + "</p></body></html>";
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
