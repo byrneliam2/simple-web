@@ -9,7 +9,11 @@ import java.net.*;
  */
 public class JavaSimpleWeb {
 
-    private String indexPath = "src/web/index.html";
+    private String webdir = "src/web/";
+    private String indexPath = webdir + "html/index.html";
+    private String badRequestPath = webdir + "html/badrequest.html";
+
+    /* -------------------------------------------------------------------------------------------------------------- */
 
     private void run() {
         try {
@@ -41,7 +45,7 @@ public class JavaSimpleWeb {
             } else if (page.startsWith("/page")) {
                 response = "something";
             } else {
-                response = htmlHeader() + "Unrecognised request." + htmlFooter();
+                response = getBadRequest();
             }
 
             sendResponse(httpResponse(response), socket);
@@ -90,25 +94,24 @@ public class JavaSimpleWeb {
                 + body;
     }
 
-    private String htmlHeader() {
-        return "<!DOCTYPE html><html><body>";
-    }
-
-    private String htmlFooter() {
-        return "</body></html>";
-    }
-
     /* -------------------------------------------------------------------------------------------------------------- */
 
-    /**
-     * Load the index page into a String and return for addition into the response.
-     */
     private String getHTMLIndex() {
-        File f = new File(indexPath);
+        return loadFileIntoString(new File(indexPath));
+    }
+
+    private String getBadRequest() {
+        return loadFileIntoString(new File(badRequestPath));
+    }
+
+    /**
+     * Load the given file into a String and return for addition into the response.
+     */
+    private String loadFileIntoString(File file) {
         StringBuilder str = new StringBuilder();
 
         try {
-            Scanner scan = new Scanner(f);
+            Scanner scan = new Scanner(file);
             while (scan.hasNextLine()) str.append(scan.nextLine());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
