@@ -4,14 +4,19 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
+/**
+ * Simple Java implementation of a Web server that responds only to GET commands.
+ */
 public class JavaSimpleWeb {
+
+    private String indexPath = "src/web/index.html";
 
     private void run() {
         try {
-            ServerSocket ss = new ServerSocket(8080);
+            ServerSocket servSocket = new ServerSocket(8080);
             while (true) {
-                Socket s = ss.accept();
-                processRequest(s);
+                Socket s = servSocket.accept();
+                processNextRequest(s);
                 s.close();
             }
         } catch (IOException e) {
@@ -19,66 +24,46 @@ public class JavaSimpleWeb {
         }
     }
 
-    private void processRequest(Socket s) throws IOException {
+    /**
+     * Process the next request issued by the client.
+     */
+    private void processNextRequest(Socket socket) throws IOException {
         try {
-            String request = readRequest(s);
-            String httpCommand = stripHttpGetCommand(request);
-            assert httpCommand != null;
-            String page = httpCommand.split(" ")[1];
+            String request = readRequest(socket);
+            String getCommand = stripHttpGetCommand(request);
+            assert getCommand != null;
+
+            String page = getCommand.split(" ")[1];
             String response;
 
             if (page.equals("/")) {
-                response = mainPage();
+                response = getHTMLIndex();
             } else if (page.startsWith("/page")) {
                 response = "something";
             } else {
-                response = htmlHeader() + "Unrecognised Request" + htmlFooter();
+                response = htmlHeader() + "Unrecognised request." + htmlFooter();
             }
 
-            sendResponse(httpResponse(response), s);
+            sendResponse(httpResponse(response), socket);
         } catch (Exception e) {
-            sendResponse(httpResponse(e.getMessage()), s);
+            sendResponse(httpResponse(e.getMessage()), socket);
         }
     }
 
-    public String redirect(String target) {
-        String r = htmlHeader();
-        r += "<script type=\"text/javascript\">location.href='" + target + "'</script>";
-        return r + htmlFooter();
-    }
-
-    private Map<String, String> splitParameters(String str) {
-        int idx = str.indexOf('?');
-        if (idx == -1 || idx >= str.length()) {
-            return new HashMap<>();
-        } else {
-            Map fields = new HashMap<String, String>();
-            String[] params = str.substring(idx + 1).split("&");
-            for (String p : params) {
-                String[] pair = p.split("=");
-                if (pair.length > 1) {
-                    fields.put(pair[0], pair[1].replace("+", " ").replace("%0D%0A", "\n"));
-                } else if (pair.length > 0) {
-                    fields.put(pair[0], "");
-                }
-            }
-            return fields;
-        }
-    }
-
+    /**
+     * Process the HTTP request and extract the GET command.
+     */
     private String stripHttpGetCommand(String request) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(request));
         String line;
         while ((line = r.readLine()) != null) {
-            if (line.startsWith("GET")) {
-                return line;
-            }
+            if (line.startsWith("GET")) return line;
         }
         return null;
     }
 
-    private String readRequest(Socket s) throws IOException {
-        Reader input = new InputStreamReader(new BufferedInputStream(s.getInputStream()));
+    private String readRequest(Socket socket) throws IOException {
+        Reader input = new InputStreamReader(new BufferedInputStream(socket.getInputStream()));
         StringBuilder request = new StringBuilder();
         char[] buf = new char[1024];
         int nread;
@@ -106,17 +91,30 @@ public class JavaSimpleWeb {
     }
 
     private String htmlHeader() {
-        return "";
+        return "<!DOCTYPE html><html><body>";
     }
 
     private String htmlFooter() {
-        return "";
+        return "</body></html>";
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
 
-    private String mainPage() {
-        return "";
+    /**
+     * Load the index page into a String and return for addition into the response.
+     */
+    private String getHTMLIndex() {
+        File f = new File(indexPath);
+        StringBuilder str = new StringBuilder();
+
+        try {
+            Scanner scan = new Scanner(f);
+            while (scan.hasNextLine()) str.append(scan.nextLine());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return str.toString();
     }
 
     /* -------------------------------------------------------------------------------------------------------------- */
