@@ -1,2 +1,2 @@
 # simple-web
-Template minimalist web servers.
+A repository containing templates for simple web servers in OO languages.
