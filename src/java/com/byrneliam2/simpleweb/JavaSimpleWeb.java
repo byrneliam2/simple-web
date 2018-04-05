@@ -41,7 +41,7 @@ public class JavaSimpleWeb {
             } else if (page.startsWith("/page")) {
                 response = "something";
             } else {
-                response = formHTMLParagraph("Could not return file specified.");
+                response = formHTMLParagraph("Unable to locate requested file");
             }
 
             sendResponse(httpResponse(response), socket);
