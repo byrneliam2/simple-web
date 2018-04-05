@@ -13,14 +13,14 @@ def run():
     try:
         servsock.bind((' ', PORT))
         servsock.listen(1)
-        print("Socket bound and listening.")
+        # print("Socket bound and listening.")
         while True:
             sock, addr = servsock.accept()
-            print("Client accepted.")
+            # print("Client accepted.")
             process(sock)
-            print("Client processed.")
+            # print("Client processed.")
             sock.close()
-            print("Socket closed.")
+            # print("Socket closed.")
     except socket.error:
         raise socket.error
     finally:
@@ -31,11 +31,11 @@ def process(sock):
     response = ""
     try:
         data = recv_data(sock)
-        print("Data received.")
+        # print("Data received.")
         if not data:
             return
         page = get_getrequest(data)
-        print("Page " + page + " received.")
+        # print("Page " + page + " received.")
 
         if page == "/":
             response = get_resource("index.html")
@@ -44,12 +44,12 @@ def process(sock):
         else:
             response = form_html_paragraph("Unable to locate requested file.")
 
-        print("Response formed.")
+        # print("Response formed.")
         send_data(response, sock)
-        print("Data sent.")
+        # print("Data sent.")
     except IOError as e:
         send_data(str(e), sock)
-        print("Error sent.")
+        # print("Error sent.")
 
 
 def recv_data(sock):
@@ -80,7 +80,7 @@ def get_resource(path):
     out = ""
     with open(HTML_PATH + path) as file:
         out += file.read()
-    print("Resource processed.")
+    # print("Resource processed.")
     return out
 
 
