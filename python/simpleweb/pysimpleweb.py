@@ -1,12 +1,11 @@
 """
 Simple Python implementation of a Web server that responds only to GET commands.
 """
-import os
 import socket
 
 PORT = 8080
 PACKET_SIZE = 1024
-HTML_PATH = "src/web/html/"
+HTML_PATH = "../web/html/"
 
 
 def run():
@@ -79,7 +78,6 @@ def get_getrequest(data):
 
 def get_resource(path):
     out = ""
-    print("WORKING DIR: " + os.getcwd())
     with open(HTML_PATH + path) as file:
         out += file.read()
     print("Resource processed.")
