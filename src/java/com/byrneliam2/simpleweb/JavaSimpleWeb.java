@@ -9,8 +9,8 @@ import java.net.*;
  */
 public class JavaSimpleWeb {
 
-    private String webdir = "src/web/";
-    private String indexPath = webdir + "html/index.html";
+    private String htmlDir = "src/web/html/";
+    private String indexPath = htmlDir + "index.html";
 
     /* -------------------------------------------------------------------------------------------------------------- */
 

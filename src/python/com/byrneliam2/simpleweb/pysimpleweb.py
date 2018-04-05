@@ -1,12 +1,12 @@
 """
 Simple Python implementation of a Web server that responds only to GET commands.
 """
-
+import os
 import socket
 
 PORT = 8080
 PACKET_SIZE = 1024
-WEBPATH = "src/web/"
+HTML_PATH = "src/web/html/"
 
 
 def run():
@@ -14,13 +14,16 @@ def run():
     try:
         servsock.bind((' ', PORT))
         servsock.listen(1)
+        print("Socket bound and listening.")
         while True:
             sock, addr = servsock.accept()
+            print("Client accepted.")
             process(sock)
+            print("Client processed.")
             sock.close()
+            print("Socket closed.")
     except socket.error:
         raise socket.error
-        # sys.exit()
     finally:
         servsock.close()
 
@@ -29,9 +32,11 @@ def process(sock):
     response = ""
     try:
         data = recv_data(sock)
+        print("Data received.")
         if not data:
             return
         page = get_getrequest(data)
+        print("Page " + page + " received.")
 
         if page == "/":
             response = get_resource("index.html")
@@ -40,18 +45,21 @@ def process(sock):
         else:
             response = form_html_paragraph("Unable to locate requested file.")
 
+        print("Response formed.")
         send_data(response, sock)
+        print("Data sent.")
     except IOError as e:
         send_data(str(e), sock)
+        print("Error sent.")
 
 
 def recv_data(sock):
     request = ""
     data = sock.recv(PACKET_SIZE).decode()
-    while data:
-        request += data
-        data = sock.recv(PACKET_SIZE).decode()
-    return request
+    # while data:
+    #     request += data
+    #     data = sock.recv(PACKET_SIZE).decode()
+    return data
 
 
 def send_data(response, sock):
@@ -71,8 +79,10 @@ def get_getrequest(data):
 
 def get_resource(path):
     out = ""
-    with open(WEBPATH + path) as file:
+    print("WORKING DIR: " + os.getcwd())
+    with open(HTML_PATH + path) as file:
         out += file.read()
+    print("Resource processed.")
     return out
 
 
